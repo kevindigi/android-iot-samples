@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">IoT Samples</string>
+    <string name="impact_measurement">Impact Measurement</string>
+    <string name="iot_samples">IoT Samples</string>
+
+    <string name="font_lato">fonts/Lato-Regular.ttf</string>
+    <string name="powered_by_digicorp">Powered by DIGI<b>CORP</b></string>
+</resources>

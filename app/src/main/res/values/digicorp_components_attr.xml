@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="DigicorpComponents">
+
+        <!-- Custom asset font attributes -->
+        <!-- name of the font file wit extension under asset folder -->
+        <attr name="font_path" format="string" />
+        <attr name="html_style" format="enum">
+            <enum name="strike_through" value="0" />
+        </attr>
+        <attr name="underlineColor" format="color" />
+    </declare-styleable>
+
+</resources>
