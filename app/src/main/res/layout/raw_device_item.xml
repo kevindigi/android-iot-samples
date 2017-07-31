@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <com.digicorp.widgets.TextView
+        android:id="@+id/lblDeviceName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="24sp"
+        tools:text="Unknown Device"
+        app:font_path="@string/font_lato" />
+
+    <com.digicorp.widgets.TextView
+        android:id="@+id/lblDeviceAddress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        tools:text="AA:BB:CC:DD:EE"
+        app:font_path="@string/font_lato" />
+
+    <com.digicorp.widgets.TextView
+        android:id="@+id/lblReading"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:font_path="@string/font_lato" />
+
+</LinearLayout>

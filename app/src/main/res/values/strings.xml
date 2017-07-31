@@ -5,4 +5,8 @@
 
     <string name="font_lato">fonts/Lato-Regular.ttf</string>
     <string name="powered_by_digicorp">Powered by DIGI<b>CORP</b></string>
+    <string name="ble_not_supported">BLE not supported</string>
+    <string name="menu_scan">Scan</string>
+    <string name="menu_stop">Stop</string>
+    <string name="error_bluetooth_not_supported">Bluetooth not supported</string>
 </resources>
