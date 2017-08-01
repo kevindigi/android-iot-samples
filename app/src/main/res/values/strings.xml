@@ -9,4 +9,5 @@
     <string name="menu_scan">Scan</string>
     <string name="menu_stop">Stop</string>
     <string name="error_bluetooth_not_supported">Bluetooth not supported</string>
+    <string name="measurement_chart">Measurement Chart</string>
 </resources>

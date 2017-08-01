@@ -18,29 +18,40 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
 import com.digicorp.androidiotsamples.Constant;
 import com.digicorp.androidiotsamples.R;
+import com.digicorp.androidiotsamples.impact_measurement.data.SensorData;
+import com.digicorp.data.BaseMeasurementTracker;
 import com.digicorp.utils.BLERecordParser;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.utils.EntryXComparator;
+import com.jjoe64.graphview.series.DataPoint;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import timber.log.Timber;
 
-public class ImpactMeasurementActivity extends AppCompatActivity {
+import static com.digicorp.androidiotsamples.impact_measurement.MeasurementChartActivity.EXTRA_MEASUREMENT_DATA;
+import static com.digicorp.androidiotsamples.impact_measurement.MeasurementChartActivity.EXTRA_MEASUREMENT_DATA_POINTS;
+import static com.digicorp.androidiotsamples.impact_measurement.MeasurementChartActivity.EXTRA_SENSOR_DATA;
+
+public class ImpactMeasurementActivity extends AppCompatActivity implements BaseQuickAdapter.OnItemClickListener {
 
     private static final int RC_COARSE_LOCATION = 1;
     private static final int RC_ENABLE_BT = 2;
@@ -51,15 +62,28 @@ public class ImpactMeasurementActivity extends AppCompatActivity {
     private DeviceRecyclerViewAdapter deviceListAdapter;
     private BluetoothAdapter mBluetoothAdapter;
     private boolean mScanning;
-    private Handler handler = new Handler();
+    private BaseMeasurementTracker<String, Entry> measurementTracker = new BaseMeasurementTracker<>();
     private ScanCallback scanCallback = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, final ScanResult result) {
             super.onScanResult(callbackType, result);
-            //if (BeaconIdentifier.isBeacon(result.getScanRecord().getBytes())) {
-            //Log.d("BeaconFound", result.getDevice().getAddress());
-            deviceListAdapter.addData(result);
-            //}
+            BluetoothDevice device = result.getDevice();
+            ScanRecord scanRecord = result.getScanRecord();
+            if (scanRecord == null) {
+                return;
+            }
+
+            String hexScanRecordString = BLERecordParser.convertScanRecordBytesToHexString(scanRecord.getBytes());
+            String[] hexParts = hexScanRecordString.split(":");
+            int x = Integer.parseInt(hexParts[Constant.X_POSITION], 16);
+            int y = Integer.parseInt(hexParts[Constant.Y_POSITION], 16);
+            int z = Integer.parseInt(hexParts[Constant.Z_POSITION], 16);
+            SensorData data = new SensorData(device.getAddress(), device.getName(), hexScanRecordString, scanRecord.getBytes());
+            data.setX(x);
+            data.setY(y);
+            data.setZ(z);
+            measurementTracker.addMeasurement(device.getAddress(), new Entry(x, y));
+            deviceListAdapter.addData(data);
         }
 
         @Override
@@ -129,6 +153,7 @@ public class ImpactMeasurementActivity extends AppCompatActivity {
         // Initializes list view adapter.
         deviceListAdapter = new DeviceRecyclerViewAdapter();
         rclvDevices.setAdapter(deviceListAdapter);
+        deviceListAdapter.setOnItemClickListener(this);
         scanLeDevice(true);
     }
 
@@ -224,22 +249,41 @@ public class ImpactMeasurementActivity extends AppCompatActivity {
         } else {
             mScanning = false;
             mBluetoothAdapter.getBluetoothLeScanner().stopScan(scanCallback);
-            supportInvalidateOptionsMenu();
         }
+        supportInvalidateOptionsMenu();
     }
 
-    private class DeviceRecyclerViewAdapter extends BaseQuickAdapter<ScanResult, BaseViewHolder> {
+    @Override
+    public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
+        SensorData data = ((DeviceRecyclerViewAdapter) adapter).getItem(position);
+        LinkedHashMap<Long, Entry> measurementData = measurementTracker.getMeasurements(data.getSensorAddress());
+
+        ArrayList<Entry> entries = new ArrayList<>(measurementData.values());
+        ArrayList<DataPoint> dataPoints = new ArrayList<>();
+        for (Entry entry : entries) {
+            dataPoints.add(new DataPoint(entry.getX(), entry.getY()));
+        }
+        Collections.sort(entries, new EntryXComparator());
+        Intent intent = new Intent(this, MeasurementChartActivity.class);
+        intent.putExtra(EXTRA_SENSOR_DATA, data);
+        intent.putParcelableArrayListExtra(EXTRA_MEASUREMENT_DATA, entries);
+        intent.putExtra(EXTRA_MEASUREMENT_DATA_POINTS, dataPoints);
+        startActivity(intent);
+    }
+
+
+    private class DeviceRecyclerViewAdapter extends BaseQuickAdapter<SensorData, BaseViewHolder> {
 
         DeviceRecyclerViewAdapter() {
-            super(R.layout.raw_device_item, new ArrayList<ScanResult>());
+            super(R.layout.raw_device_item, new ArrayList<SensorData>());
         }
 
         @Override
-        public void addData(@NonNull ScanResult data) {
+        public void addData(@NonNull SensorData data) {
             int index = -1;
-            List<ScanResult> lstData = getData();
-            for (ScanResult result : lstData) {
-                if (result.getDevice().getAddress().equalsIgnoreCase(data.getDevice().getAddress())) {
+            List<SensorData> lstData = getData();
+            for (SensorData result : lstData) {
+                if (result.getSensorAddress().equalsIgnoreCase(data.getSensorAddress())) {
                     index = lstData.indexOf(result);
                     break;
                 }
@@ -252,26 +296,17 @@ public class ImpactMeasurementActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void convert(BaseViewHolder helper, ScanResult item) {
-            BluetoothDevice device = item.getDevice();
-            helper.setText(R.id.lblDeviceAddress, device.getAddress());
-            helper.setText(R.id.lblDeviceName, device.getName() == null
-                    || device.getName().length() == 0 ? "Unknown Device" : device.getName());
+        protected void convert(BaseViewHolder helper, SensorData item) {
+            helper.setText(R.id.lblDeviceAddress, item.getSensorAddress());
+            helper.setText(R.id.lblDeviceName, item.getSensorName());
 
-            ScanRecord scanRecord = item.getScanRecord();
-            if (scanRecord == null) {
-                return;
-            }
+            String sb = "\nReading:\n" +
+                    item.getHexScanRecord() + "\n\n" +
+                    "X: " + item.getX() + "\n" +
+                    "Y: " + item.getY() + "\n" +
+                    "Z: " + item.getZ() + "\n";
 
-            String hexScanRecordString = BLERecordParser.convertScanRecordBytesToHexString(scanRecord.getBytes());
-            StringBuilder sb = new StringBuilder("Reading:\n").append(hexScanRecordString)
-                    .append("\n\n");
-            String[] hexParts = hexScanRecordString.split(":");
-            sb.append("X: ").append(Integer.parseInt(hexParts[Constant.X_POSITION], 16)).append("\n");
-            sb.append("Y: ").append(Integer.parseInt(hexParts[Constant.Y_POSITION], 16)).append("\n");
-            sb.append("Z: ").append(Integer.parseInt(hexParts[Constant.Z_POSITION], 16)).append("\n");
-
-            helper.setText(R.id.lblReading, sb.toString());
+            helper.setText(R.id.lblReading, sb);
         }
     }
 }

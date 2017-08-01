@@ -29,7 +29,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".MainActivity"
             android:label="@string/iot_samples" />
@@ -37,7 +36,10 @@
             android:name=".impact_measurement.ImpactMeasurementActivity"
             android:label="@string/impact_measurement"
             android:parentActivityName=".MainActivity" />
-
+        <activity
+            android:name=".impact_measurement.MeasurementChartActivity"
+            android:label="@string/measurement_chart"
+            android:parentActivityName=".impact_measurement.ImpactMeasurementActivity" />
     </application>
 
 </manifest>
