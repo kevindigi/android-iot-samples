@@ -2,7 +2,9 @@ package com.digicorp.androidiotsamples.impact_measurement;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.digicorp.androidiotsamples.R;
@@ -114,9 +116,19 @@ public class MeasurementChartActivity extends AppCompatActivity {
 
 
         // GraphView chart
-        LineGraphSeries<DataPoint> series = new LineGraphSeries<DataPoint>(measurementDataPoints.toArray(new DataPoint[]{}));
+        LineGraphSeries<DataPoint> series = new LineGraphSeries<>(measurementDataPoints.toArray(new DataPoint[]{}));
         series.setTitle(sensorData.getSensorName());
         graph.addSeries(series);
+    }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            // Respond to the action bar's Up/Home button
+            case android.R.id.home:
+                NavUtils.navigateUpFromSameTask(this);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

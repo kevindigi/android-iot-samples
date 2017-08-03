@@ -1,13 +1,24 @@
 <resources>
     <string name="app_name">IoT Samples</string>
-    <string name="impact_measurement">Impact Measurement</string>
-    <string name="iot_samples">IoT Samples</string>
 
+    <!-- Activity title -->
+    <string name="iot_samples">IoT Samples</string>
+    <string name="impact_measurement">Impact Measurement</string>
+    <string name="ble_distance">BLE Distance</string>
+    <string name="measurement_chart">Measurement Chart</string>
+
+    <!-- Font name -->
     <string name="font_lato">fonts/Lato-Regular.ttf</string>
-    <string name="powered_by_digicorp">Powered by DIGI<b>CORP</b></string>
-    <string name="ble_not_supported">BLE not supported</string>
+
+    <!-- Menu name -->
     <string name="menu_scan">Scan</string>
     <string name="menu_stop">Stop</string>
+
+    <!-- General text -->
+    <string name="powered_by_digicorp">Powered by DIGI<b>CORP</b></string>
+    <string name="unknown_device">Unknown Device</string>
+
+    <!-- Error messages -->
+    <string name="ble_not_supported">BLE not supported</string>
     <string name="error_bluetooth_not_supported">Bluetooth not supported</string>
-    <string name="measurement_chart">Measurement Chart</string>
 </resources>

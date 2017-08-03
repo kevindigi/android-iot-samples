@@ -11,6 +11,7 @@ import android.view.View;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
+import com.digicorp.androidiotsamples.ble_distance.BLEDistanceActivity;
 import com.digicorp.androidiotsamples.impact_measurement.ImpactMeasurementActivity;
 
 import java.util.ArrayList;
@@ -51,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements BaseQuickAdapter.
 
     private void prepareActivitySampleMapping() {
         activitySampleMapping = new LinkedHashMap<String, Class>() {{
+            put("BLE Distance", BLEDistanceActivity.class);
             put("Impact Measurement", ImpactMeasurementActivity.class);
         }};
     }
